@@ -2,7 +2,7 @@
 
 ## Acknowledgement & Source Information
 
-This project is developed based on the open-source project by [qiuqiangkong](https://github.com/qiuqiangkong/audio_flow/tree/main ). Special thanks for their valuable work.
+This project is developed based on the open-source project by [qiuqiangkong](https://github.com/qiuqiangkong/audio_flow/tree/main ). Special thanks for his valuable work.
 
 ### Key Modifications:
 - Added module of SoundFiled predicting
