@@ -1,0 +1,10 @@
+/results/*
+/checkpoints/*
+*.wav
+*.pth
+*.pyc
+*.log
+*.tmp
+*.png
+*.json
+/wandb/*
