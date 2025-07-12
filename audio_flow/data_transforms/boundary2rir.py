@@ -1,0 +1,76 @@
+import torch
+import torch.nn as nn
+from torch import Tensor
+from einops import rearrange
+
+from audio_flow.encoders.bigvgan import Mel_BigVGAN_44kHz
+
+
+class Boundary2RIR(nn.Module):
+    def __init__(self):
+        super().__init__()
+        
+        self.vocoder = Mel_BigVGAN_44kHz()
+
+    def __call__(self, data: dict) -> tuple[Tensor, dict, dict]:
+        r"""Transform data into latent representations and conditions.
+
+        b: batch_size
+        c: channels_num
+        l: audio_samples
+        t: frames_num
+        f: mel bins
+        """
+        
+        name = data["dataset_name"][0]
+        device = next(self.parameters()).device
+
+        if name in ["FDTD_2D_RIR"]:
+                #  "bnd": bnd[None, ...], # (1, h, w)
+                # "u0": u0[None, ...], # (1, h, w)
+                # "x": x[None, ...], # (1, 1)
+                # "y": y[None, ...], # (1, 1)
+                # "uxy": uxy[None, ...], # (1, l, 1, 1)
+        
+            u0 = data["u0"].to(device) # (b, 1, t, f)
+            bnd = data["bnd"].to(device) # (b, 1, t, f)
+            x = data["x"].to(device) # (b, 1,)
+            y = data["y"].to(device) # (b, 1,)
+            uxy = data["uxy"].to(device)  # (b, l, 1, 1)
+            target = rearrange(uxy, 'b l t f -> b t l f')  # (b, 1, l, 1)
+            l2 = 240
+            target = rearrange(target, 'b c (l1 l2) f -> b c l2 (l1 f)', l2=l2)  # (b, 1, 240, l1)
+            
+            cond_c = torch.cat([x, y], dim=1) # (b, 2,)
+            cond_tf = torch.cat([u0, bnd], dim=1) # (b, 2, 1, 1)
+
+            cond_dict = {
+                "y": None,
+                "c": cond_c,
+                "ct": None,
+                "ctf": cond_tf,
+                "cx": None
+            }
+
+            cond_sources = {
+                "source_origin": u0, 
+                "boundary": bnd,
+                "x": x,
+                "y": y,
+            }
+
+            return target, cond_dict, cond_sources
+
+        else:
+            raise ValueError(name)
+
+    def latent_to_audio(self, x: Tensor) -> Tensor:
+        r"""Ues vocoder to convert mel spectrogram to audio.
+
+        Args:
+            x: (b, c, t, f)
+
+        Outputs:
+            y: (b, c, t, f)
+        """
+        return x

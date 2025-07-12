@@ -20,13 +20,14 @@ import wandb
 from audio_flow.utils import LinearWarmUp, Logmel, parse_yaml, requires_grad, update_ema
 
 import os
-#import pdb;pdb.set_trace()
+import pdb
+# pdb.set_trace()
 def train(args) -> None:
     r"""Train audio generation with flow matching."""
     
     # Arguments
     wandb_log = not args.no_log
-    #wandb_log = False
+    wandb_log = False
     config_path = args.config
     filename = Path(__file__).stem
     
@@ -96,6 +97,7 @@ def train(args) -> None:
 
         # 1.3 Get input and velocity
         t, xt, ut = fm.sample_location_and_conditional_flow(x0=noise, x1=target)
+        pdb.set_trace()
 
         # ------ 2. Training ------
         # 2.1 Forward
@@ -214,6 +216,10 @@ def get_data_transform(configs: dict):
         from audio_flow.data_transforms.boundary2field import Boundary2Field
         return Boundary2Field()
     
+    elif name == "Boundary2RIR":
+        from audio_flow.data_transforms.boundary2rir import Boundary2RIR
+        return Boundary2RIR()
+    
     else:
         raise ValueError(name)
 
@@ -311,6 +317,18 @@ def get_dataset(
                 select_mode=select_mode,
                 select_num=select_num,
                 duration=configs["duration"]
+            )
+            return dataset
+        
+        elif name == "FDTD_2D_RIR":
+
+            from audio_flow.datasets.fdtd_2d import FDTD2D_at_xy
+            dataset = FDTD2D_at_xy(
+                skip=configs[ds][name]["skip"],
+                duration=configs["duration"],
+                dx=configs["dx"],
+                dy=configs["dy"],
+                sampling_frequency=configs["sampling_frequency"]
             )
             return dataset
 
@@ -488,7 +506,12 @@ def validate(
         plt.savefig(out_path)
         print(f"Write out to {out_path}")
         plt.close(fig)
-
+    
+    elif configs["data_transform"]["name"] == "Boundary2RIR": 
+        if split == "train":
+            return
+        print("Validate Boundary2RIR")
+        
     else:
         for idx in range(0, len(dataset), skip_n):
 

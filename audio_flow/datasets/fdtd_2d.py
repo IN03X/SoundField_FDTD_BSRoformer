@@ -92,11 +92,64 @@ class FDTD2D_at_T:
             return 100 # Number of steps in an epoch, 1getitem = 1len
         elif self.select_mode == "order":
             return self.select_num
- 
+        
+class FDTD2D_at_xy:
+    def __init__(self, skip: int, duration:float, dx:float=0.1, dy:float=0.1, sampling_frequency:float=48000) -> None:
+        self.skip = skip
+        self.simulator = FDTD2D(duration=duration,dx=dx,dy=dy,sampling_frequency=sampling_frequency)
+        self.i = 0
+        self.dx = dx
+        self.dy = dy
+
+
+    def __getitem__(self, index: int) -> dict:
+        r"""Get a data.
+
+        t: time_step
+        h: height
+        w: weight
+
+        Returns:
+            new_data: dict
+        """
+        
+        data = self.simulator()
+
+        bnd = data["bnd"]  # (h, w)
+        u = data["u"][0 :: self.skip]  # (t, h, w)
+        t = data["t"][0 :: self.skip]  # (t,)
+        u0 = u[0]
+
+        i = random.randint(0, u.shape[1] - 1)
+        j = random.randint(0, u.shape[2] - 1)
+
+        # x = self.dx * i
+        # y = self.dy * j
+        x = np.array(i).astype(np.float32) #()
+        y = np.array(j).astype(np.float32)
+        uxy = u[:,i,j] #(l,)
+
+        data = {
+                "dataset_name": "FDTD_2D_RIR",
+                "bnd": bnd[None, ...], # (1, h, w)
+                "u0": u0[None, ...], # (1, h, w)
+                "x": x[None, ...], # (1,)
+                "y": y[None, ...], # (1,)
+                "uxy": uxy[..., None, None], # (l, 1, 1)
+        }
+
+        return data
+
+    def __len__(self) -> int:
+        return 100 # Number of steps in an epoch, 1getitem = 1len
+
 class FDTD2D:
     def __init__(
         self, 
         duration: float = 0.02, # total time
+        dx:float=0.1,
+        dy:float=0.1,
+        sampling_frequency:int=None,
         verbose: bool = False
     ):
         r"""FDTD wave simulator."""
@@ -104,13 +157,16 @@ class FDTD2D:
         self.duration = duration
         self.verbose = verbose
         
-        self.dx = 0.1  # Should be smaller than λ
-        self.dy = 0.1
+        self.dx = dx  # Should be smaller than λ
+        self.dy = dy
         self.nx = 64
         self.ny = 64
         
         self.c = 343.
-        self.dt = self.dx / self.c / 3  # CFL condition
+        if sampling_frequency == None:
+            self.dt = self.dx / self.c / 3  # CFL condition
+        else:
+            self.dt = 1.0 / sampling_frequency
         self.nt = round(self.duration / self.dt)
 
     def __call__(self) -> dict:
