@@ -9,7 +9,7 @@ from einops import rearrange
 from torch import Tensor
 
 from audio_flow.models.attention import Block
-from audio_flow.models.embedders import LabelEmbedder, MlpEmbedder, TimestepEmbedder
+from audio_flow.models.embedders import LabelEmbedder, MlpEmbedder, TimestepEmbedder, CNNEmbedder
 from audio_flow.models.pad import pad1d, pad2d, unpad2d
 from audio_flow.models.patch import Patch1D, Patch2D
 from audio_flow.models.rope import build_rope
@@ -23,6 +23,7 @@ class Config:
     # Condition params
     y_dim: int
     c_dim: int
+    cnn_dim: int
     ct_dim: int
     ctf_dim: int
     cx_dim: int
@@ -83,6 +84,9 @@ class BSRoformerMel(nn.Module):
         # Cross-attention embedder
         if config.cx_dim:
             self.cx_embedder = MlpEmbedder(config.cx_dim, config.n_embd)
+
+        if config.cnn_dim:
+            self.cnn_embedder = CNNEmbedder(config.cnn_dim, config.n_embd)
 
         # Transformer blocks
         self.t_blocks = nn.ModuleList(Block(config) for _ in range(config.n_layer))
@@ -156,6 +160,10 @@ class BSRoformerMel(nn.Module):
         # 2.6 Cross-attention embedding
         if self.config.cx_dim:
             cx = self.cx_embedder(cond_dict["cx"])  # (b, d, t)
+        
+        if self.config.cnn_dim:
+            cnn = self.cnn_embedder(cond_dict["cnn"])  # (b, d)
+            emb += cnn[:, :, None, None]
 
         # --- 2. Transformer along time and frequency axes ---
         for t_block, f_block in zip(self.t_blocks, self.f_blocks):

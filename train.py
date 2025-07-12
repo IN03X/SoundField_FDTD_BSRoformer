@@ -97,7 +97,7 @@ def train(args) -> None:
 
         # 1.3 Get input and velocity
         t, xt, ut = fm.sample_location_and_conditional_flow(x0=noise, x1=target)
-        pdb.set_trace()
+        # pdb.set_trace()
 
         # ------ 2. Training ------
         # 2.1 Forward

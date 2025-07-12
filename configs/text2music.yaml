@@ -24,6 +24,7 @@ model:
     ct_dim:  # Leave blank if None
     ctf_dim:  # Leave blank if None
     cx_dim:  # Leave blank if None
+    cnn_dim:  # Leave blank if None
 
     in_channels: 1
     patch_size: [4, 4]

@@ -38,17 +38,18 @@ class Boundary2RIR(nn.Module):
             y = data["y"].to(device) # (b, 1,)
             uxy = data["uxy"].to(device)  # (b, l, 1, 1)
             target = rearrange(uxy, 'b l t f -> b t l f')  # (b, 1, l, 1)
-            l2 = 240
-            target = rearrange(target, 'b c (l1 l2) f -> b c l2 (l1 f)', l2=l2)  # (b, 1, 240, l1)
+            l1 = 240
+            target = rearrange(target, 'b c (l1 l2) f -> b c l1 (l2 f)', l1=l1)  # (b, 1, 240, l1)
             
             cond_c = torch.cat([x, y], dim=1) # (b, 2,)
-            cond_tf = torch.cat([u0, bnd], dim=1) # (b, 2, 1, 1)
+            cond_nn = torch.cat([u0, bnd], dim=1) # (b, 2, n, n)
 
             cond_dict = {
                 "y": None,
                 "c": cond_c,
+                "cnn":cond_nn,
                 "ct": None,
-                "ctf": cond_tf,
+                "ctf": None,
                 "cx": None
             }
 

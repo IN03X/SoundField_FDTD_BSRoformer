@@ -28,8 +28,9 @@ model:
     name: BSRoformerMel
     y_dim:  # Leave blank if None
     c_dim:  2
+    cnn_dim: 2
     ct_dim:  # Leave blank if None
-    ctf_dim: 2
+    ctf_dim: # Leave blank if None
     cx_dim:  # Leave blank if None
 
     in_channels: 1

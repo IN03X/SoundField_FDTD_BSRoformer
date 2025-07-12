@@ -3,7 +3,7 @@ import math
 import torch
 import torch.nn as nn
 from torch import LongTensor, Tensor
-
+from .cnn import Cnn
 
 class TimestepEmbedder(nn.Module):
     r"""Time step embedder.
@@ -104,4 +104,31 @@ class MlpEmbedder(nn.Module):
         x = x.transpose(1, -1)  # (b, ..., d)
         x = self.mlp(x)  # (b, ..., d)  let mlp work on d
         x = x.transpose(1, -1)  # (b, d, ...)
+        return x
+    
+class CNNEmbedder(nn.Module):
+
+    def __init__(self, cnn_dim: int, out_channels: int):
+        super().__init__()
+
+        self.cnn = Cnn(cnn_dim=cnn_dim)
+        in_channels = self.cnn.mlp_in_channels
+        self.mlp = nn.Sequential(
+            nn.Linear(in_channels, out_channels),
+            nn.SiLU(),
+            nn.Linear(out_channels, out_channels, bias=True),
+        )
+
+    def forward(self, x: Tensor) -> Tensor:
+        r"""Calculate CNN embedding. 
+        Args:
+            x: (b, c, n, n)
+        Outputs:
+            out: (b, d, ...)
+        """
+        
+        x = self.cnn(x) # (b, c)
+
+        x = self.mlp(x)  # (b, d)  let mlp work on d
+
         return x

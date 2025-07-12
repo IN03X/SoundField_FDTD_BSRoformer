@@ -74,7 +74,7 @@ class Patch2D(nn.Module):
         f2: patch_size_f, e.g., 4
 
         Args:
-            x: (b, d, t1*t2, f1*t2)
+            x: (b, d, t1*t2, f1*f2)
 
         Outputs:
             x: (b, d, t1, f1)
