@@ -26,7 +26,7 @@ def train(args) -> None:
     
     # Arguments
     wandb_log = not args.no_log
-    wandb_log = False
+    #wandb_log = False
     config_path = args.config
     filename = Path(__file__).stem
     
@@ -36,7 +36,8 @@ def train(args) -> None:
 
     # Checkpoints directory
     config_name = Path(config_path).stem
-    ckpts_dir = Path("home/runbang/audio_flow-main/checkpoints", filename, config_name)
+    # ckpts_dir = Path("home/runbang/audio_flow-main/checkpoints", filename, config_name)
+    ckpts_dir = Path("checkpoints", filename, config_name)
     Path(ckpts_dir).mkdir(parents=True, exist_ok=True)
 
     # Datasets
@@ -78,7 +79,8 @@ def train(args) -> None:
         params=model.parameters()
     )
 
-    os.environ['WANDB_DIR'] = '/home/runbang/audio_flow-main/wandb'
+    # os.environ['WANDB_DIR'] = '/home/runbang/audio_flow-main/wandb'
+    os.environ['WANDB_DIR'] = 'wandb'
     # Logger
     if wandb_log:
         wandb.init(project="audio_flow", name=f"{filename}_{config_name}")
@@ -126,7 +128,8 @@ def train(args) -> None:
                     data_transform=data_transform,
                     model=model,
                     split=split,
-                    out_dir=Path("/home/runbang/audio_flow-main/results", filename, config_name, f"steps={step}")
+                    # out_dir=Path("/home/runbang/audio_flow-main/results", filename, config_name, f"steps={step}")
+                    out_dir=Path("results", filename, config_name, f"steps={step}")
                 )
 
             for split in ["train", "test"]:
@@ -135,7 +138,8 @@ def train(args) -> None:
                     data_transform=data_transform,
                     model=ema,
                     split=split,
-                    out_dir=Path("/home/runbang/audio_flow-main/results", filename, config_name, f"steps={step}_ema")
+                    # out_dir=Path("/home/runbang/audio_flow-main/results", filename, config_name, f"steps={step}_ema")
+                    out_dir=Path("results", filename, config_name, f"steps={step}_ema")
                 )
 
             if wandb_log:
