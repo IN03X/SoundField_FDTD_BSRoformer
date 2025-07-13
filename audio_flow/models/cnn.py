@@ -6,7 +6,7 @@ import torch
 from einops import rearrange
 
 class Cnn(nn.Module):
-    def __init__(self, cnn_dim:int) -> None:
+    def __init__(self, cnn_dim:int, h:int=64, w:int=64) -> None:
         super().__init__()
         
         self.pre_layer = nn.Conv2d(in_channels=cnn_dim, out_channels=32, kernel_size=5, padding=2) # step = 1 ->> same dimension in/output
@@ -16,7 +16,7 @@ class Cnn(nn.Module):
         self.post_layer = nn.Conv2d(in_channels=32, out_channels=1, kernel_size=5, padding=2)
 
         with torch.no_grad():
-            dummy = torch.randn(1, cnn_dim, 64, 64) 
+            dummy = torch.randn(1, cnn_dim, h, w) 
             x = self.forward(dummy)
             self.mlp_in_channels = x.shape[1]
 

@@ -4,6 +4,7 @@ import argparse
 from copy import deepcopy
 from pathlib import Path
 from typing import Iterable, Literal
+import numpy as np
 
 import matplotlib.pyplot as plt
 import soundfile
@@ -507,11 +508,74 @@ def validate(
         print(f"Write out to {out_path}")
         plt.close(fig)
     
+
     elif configs["data_transform"]["name"] == "Boundary2RIR": 
         if split == "train":
             return
-        print("Validate Boundary2RIR")
+        #print("Validate Boundary2RIR")
+
+        N = configs['test_datasets']['FDTD_2D_RIR']['select_num']
         
+        fig, axes = plt.subplots(N, 1, 
+                                figsize=(8, N * 2), 
+                                sharex=True)
+        if N == 1:
+            axes = [axes]
+
+        for i, ax in enumerate(axes):
+            data = dataset[i]
+            data = default_collate([data])
+            target, cond_dict, cond_sources = data_transform(data)
+            noise = torch.randn_like(target)
+
+            with torch.no_grad():
+                model.eval()
+                traj = torchdiffeq.odeint(
+                    lambda t, x: model.forward(t, x, cond_dict),
+                    y0=noise,
+                    t=torch.linspace(0, 1, 2, device=device),
+                    atol=1e-4,
+                    rtol=1e-4,
+                    method="dopri5",
+                )
+            est_target = traj[-1]  
+            est_audio = data_transform.latent_to_audio(est_target).data.cpu().numpy()[0]  # (1,l)
+            gt_audio = data_transform.latent_to_audio(target).data.cpu().numpy()[0]  # (1,l)
+            x = data["x"].cpu().numpy().item()
+            y = data["y"].cpu().numpy().item()
+
+            time_axis = np.arange(len(gt_audio)) / configs["sampling_frequency"]  
+            ax.plot(time_axis, gt_audio, 
+                    color='royalblue', alpha=0.8, linewidth=0.8, label='Ground Truth')
+            ax.plot(time_axis, est_audio, 
+                    color='crimson', alpha=0.7, linewidth=0.8, linestyle='-', label='Estimated')
+            
+            ax.text(0.02, 0.9, f'Sample {i+1}: ({x:.0f},{y:.0f})', 
+                    transform=ax.transAxes, fontsize=9, 
+                    bbox=dict(facecolor='white', alpha=0.7))
+
+        axes[0].legend(loc='lower center', bbox_to_anchor=(0.5, 1.0),
+                    ncol=2, fontsize=9, framealpha=0.7)
+
+        plt.xlim(0, time_axis[-1])
+        plt.xlabel('Time (s)', fontsize=10)
+        plt.suptitle('FDTD2D RIR Comparison', fontsize=12, y=0.98)
+
+        for ax in axes:
+            ax.tick_params(axis='y', which='both', length=0)
+            ax.set_yticks([])
+            ax.spines[['top', 'right', 'left']].set_visible(False)
+
+        axes[-1].spines['bottom'].set_visible(True)
+        axes[-1].tick_params(axis='x', labelsize=8)
+
+        plt.tight_layout(rect=[0, 0, 1, 0.96])
+        out_path = Path(out_dir, f"fdtd_2d_pred.pdf")
+        plt.savefig(out_path, bbox_inches='tight')
+        print(f"Write out to {out_path}")
+        plt.close(fig)
+
+                
     else:
         for idx in range(0, len(dataset), skip_n):
 

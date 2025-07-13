@@ -69,9 +69,12 @@ class Boundary2RIR(nn.Module):
         r"""Ues vocoder to convert mel spectrogram to audio.
 
         Args:
-            x: (b, c, t, f)
+            x: (b, 1, l1, l2)
 
         Outputs:
-            y: (b, c, t, f)
+            y: (b, l)
         """
+        l1 = 240
+        x = rearrange(x, 'b c l1 l2 -> b (c l1 l2)', l1=l1)  
+        
         return x
