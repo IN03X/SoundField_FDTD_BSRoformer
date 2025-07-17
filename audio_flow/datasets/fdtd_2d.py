@@ -144,12 +144,14 @@ class FDTD2D_at_xy:
         return 100 # Number of steps in an epoch, 1getitem = 1len
     
 class FDTD2D_at_xy_pointscloud:
-    def __init__(self, skip: int, duration:float, dx:float=0.1, dy:float=0.1, sampling_frequency:float=48000) -> None:
+    def __init__(self, skip: int, duration:float, dx:float=0.1, dy:float=0.1, sampling_frequency:float=48000, d0:int=6, l_prime:int=20 ) -> None:
         self.skip = skip
         self.simulator = FDTD2D(duration=duration,dx=dx,dy=dy,sampling_frequency=sampling_frequency)
         self.i = 0
         self.dx = dx
         self.dy = dy
+        self.d0 = d0
+        self.l_prime = l_prime
 
 
     def __getitem__(self, index: int) -> dict:
@@ -166,7 +168,6 @@ class FDTD2D_at_xy_pointscloud:
         data = self.simulator()
 
         bnd = data["bnd"]  # (h, w)
-        bnd_pointscloud = np.argwhere(bnd == 1)
         u = data["u"][0 :: self.skip]  # (t, h, w)
         t = data["t"][0 :: self.skip]  # (t,)
         u0 = u[0]
@@ -182,11 +183,13 @@ class FDTD2D_at_xy_pointscloud:
 
         data = {
                 "dataset_name": "FDTD_2D_RIR_PointsCloud",
-                "bnd_pointscloud": bnd_pointscloud[None, ...], # (1, l_bnd, 2)
+                "bnd": bnd[...], # (h, w)
                 "u0": u0[None, ...], # (1, h, w)
                 "x": x[None, ...], # (1,)
                 "y": y[None, ...], # (1,)
                 "uxy": uxy[..., None, None], # (l, 1, 1)
+                "d0": self.d0,
+                "l_prime": self.l_prime
         }
 
         return data

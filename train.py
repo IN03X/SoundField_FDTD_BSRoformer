@@ -98,7 +98,7 @@ def train(args) -> None:
 
         # 1.3 Get input and velocity
         t, xt, ut = fm.sample_location_and_conditional_flow(x0=noise, x1=target)
-        pdb.set_trace()
+        # pdb.set_trace()
 
         # ------ 2. Training ------
         # 2.1 Forward
@@ -345,7 +345,9 @@ def get_dataset(
                 duration=configs["duration"],
                 dx=configs["dx"],
                 dy=configs["dy"],
-                sampling_frequency=configs["sampling_frequency"]
+                sampling_frequency=configs["sampling_frequency"],
+                d0=configs["d0"],
+                l_prime=configs["l_prime"],
             )
             return dataset
 

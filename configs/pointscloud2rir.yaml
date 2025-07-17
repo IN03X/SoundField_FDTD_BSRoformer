@@ -4,6 +4,9 @@ dx: 0.1
 dy: 0.1
 sampling_frequency: 12000
 
+d0: 6
+l_prime: 20
+
 sample_rate: None
 clip_duration: None
 target_stems: None
@@ -32,7 +35,7 @@ model:
     ct_dim:  # Leave blank if None
     ctf_dim: # Leave blank if None
     cx_dim:  # Leave blank if None
-    cavg_dim: 1
+    cavg_dim: 120
 
     in_channels: 1
     patch_size: [4, 4]
