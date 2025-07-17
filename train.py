@@ -526,17 +526,18 @@ def validate(
         print(f"Write out to {out_path}")
         plt.close(fig)
     
-    elif configs["data_transform"]["name"] == "PointsCloud2RIR": 
-        if split == "train":
-            return
-        print("Validate PointsCloud2RIR")
+    # elif configs["data_transform"]["name"] == "PointsCloud2RIR": 
+    #     if split == "train":
+    #         return
+    #     print("Validate PointsCloud2RIR")
 
-    elif configs["data_transform"]["name"] == "Boundary2RIR": 
+    elif configs["data_transform"]["name"] == "Boundary2RIR" or configs["data_transform"]["name"] == "PointsCloud2RIR": 
         if split == "train":
             return
         #print("Validate Boundary2RIR")
 
-        N = configs['test_datasets']['FDTD_2D_RIR']['select_num']
+        test_datasets = configs['test_datasets']
+        N = test_datasets.get('FDTD_2D_RIR', {}).get('select_num') or test_datasets.get('FDTD_2D_RIR_PointsCloud', {}).get('select_num')
         
         fig, axes = plt.subplots(N, 1, 
                                 figsize=(8, N * 2), 
