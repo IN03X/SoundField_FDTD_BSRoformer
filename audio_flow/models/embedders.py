@@ -132,3 +132,48 @@ class CNNEmbedder(nn.Module):
         x = self.mlp(x)  # (b, d)  let mlp work on d
 
         return x
+    
+class C_AVGEmbedder(nn.Module):
+
+    def __init__(self, in_channels: int, out_channels: int):
+        super().__init__()
+
+        self.d0 = 6
+        self.l_prime = 20
+
+        self.mlp0 = nn.Sequential(
+            nn.Linear(2, self.d0),
+            nn.SiLU(),
+            nn.Linear(self.d0, self.d0, bias=True),
+        )
+
+        self.mlp = nn.Sequential(
+            nn.Linear(self.d0*self.l_prime, out_channels),
+            nn.SiLU(),
+            nn.Linear(out_channels, out_channels, bias=True),
+        )
+
+    def forward(self, x: Tensor) -> Tensor:
+        r"""Calculate C_AVG embedding.
+
+        Args:
+            x: (b, 1, l, 2)
+
+        Outputs:
+            out: (b, d) 
+        """
+        
+        x = self.mlp0(x)  # (b, 1, l, d0) 
+        x = x.squeeze(dim=1) # (b, l, d0) 
+
+        x = x.transpose(1, 2)  # (b, d0, l)
+        pool1d = nn.AdaptiveAvgPool1d(self.l_prime)
+        x = pool1d(x)            # (b, d0, l')
+        x = x.transpose(1, 2)  # (b, l', d0)
+
+        from einops import rearrange
+        x = rearrange(x, 'b l d -> b (l d)')  # (b, l'd0)
+
+        x = self.mlp(x) # (b, d)
+
+        return x

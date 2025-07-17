@@ -28,6 +28,7 @@ model:
     ctf_dim: 1
     cx_dim:  # Leave blank if None
     cnn_dim:  # Leave blank if None
+    cavg_dim: # Leave blank if None
 
     in_channels: 2
     patch_size: [4, 4]

@@ -98,7 +98,7 @@ def train(args) -> None:
 
         # 1.3 Get input and velocity
         t, xt, ut = fm.sample_location_and_conditional_flow(x0=noise, x1=target)
-        # pdb.set_trace()
+        pdb.set_trace()
 
         # ------ 2. Training ------
         # 2.1 Forward
@@ -221,6 +221,10 @@ def get_data_transform(configs: dict):
         from audio_flow.data_transforms.boundary2rir import Boundary2RIR
         return Boundary2RIR()
     
+    elif name == "PointsCloud2RIR":
+        from audio_flow.data_transforms.pointscloud2rir import PointsCloud2RIR
+        return PointsCloud2RIR()
+    
     else:
         raise ValueError(name)
 
@@ -325,6 +329,18 @@ def get_dataset(
 
             from audio_flow.datasets.fdtd_2d import FDTD2D_at_xy
             dataset = FDTD2D_at_xy(
+                skip=configs[ds][name]["skip"],
+                duration=configs["duration"],
+                dx=configs["dx"],
+                dy=configs["dy"],
+                sampling_frequency=configs["sampling_frequency"]
+            )
+            return dataset
+        
+        elif name == "FDTD_2D_RIR_PointsCloud":
+
+            from audio_flow.datasets.fdtd_2d import FDTD2D_at_xy_pointscloud
+            dataset = FDTD2D_at_xy_pointscloud(
                 skip=configs[ds][name]["skip"],
                 duration=configs["duration"],
                 dx=configs["dx"],
@@ -508,6 +524,10 @@ def validate(
         print(f"Write out to {out_path}")
         plt.close(fig)
     
+    elif configs["data_transform"]["name"] == "PointsCloud2RIR": 
+        if split == "train":
+            return
+        print("Validate PointsCloud2RIR")
 
     elif configs["data_transform"]["name"] == "Boundary2RIR": 
         if split == "train":

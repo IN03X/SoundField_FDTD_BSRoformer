@@ -9,7 +9,7 @@ from einops import rearrange
 from torch import Tensor
 
 from audio_flow.models.attention import Block
-from audio_flow.models.embedders import LabelEmbedder, MlpEmbedder, TimestepEmbedder, CNNEmbedder
+from audio_flow.models.embedders import LabelEmbedder, MlpEmbedder, TimestepEmbedder, CNNEmbedder, C_AVGEmbedder
 from audio_flow.models.pad import pad1d, pad2d, unpad2d
 from audio_flow.models.patch import Patch1D, Patch2D
 from audio_flow.models.rope import build_rope
@@ -27,6 +27,7 @@ class Config:
     ct_dim: int
     ctf_dim: int
     cx_dim: int
+    cavg_dim: int
     in_channels: int = 1
 
     # Transformer params
@@ -87,6 +88,9 @@ class BSRoformerMel(nn.Module):
 
         if config.cnn_dim:
             self.cnn_embedder = CNNEmbedder(config.cnn_dim, config.n_embd)
+
+        if config.cavg_dim:
+            self.cavg_embedder = C_AVGEmbedder(config.cavg_dim, config.n_embd)
 
         # Transformer blocks
         self.t_blocks = nn.ModuleList(Block(config) for _ in range(config.n_layer))
@@ -164,6 +168,10 @@ class BSRoformerMel(nn.Module):
         if self.config.cnn_dim:
             cnn = self.cnn_embedder(cond_dict["cnn"])  # (b, d)
             emb += cnn[:, :, None, None]
+
+        if self.config.cavg_dim:
+            cavg = self.cavg_embedder(cond_dict["cavg"])  # (b, d)
+            emb += cavg[:, :, None, None]
 
         # --- 2. Transformer along time and frequency axes ---
         for t_block, f_block in zip(self.t_blocks, self.f_blocks):
