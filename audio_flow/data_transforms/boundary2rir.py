@@ -43,6 +43,7 @@ class Boundary2RIR(nn.Module):
             
             cond_c = torch.cat([x, y], dim=1) # (b, 2,)
             cond_nn = torch.cat([u0, bnd], dim=1) # (b, 2, n, n)
+            # cond_nn = u0
 
             cond_dict = {
                 "y": None,

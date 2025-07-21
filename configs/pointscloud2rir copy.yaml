@@ -4,8 +4,8 @@ dx: 0.1
 dy: 0.1
 sampling_frequency: 12000
 
-d0: 6
-l_prime: 20
+d0: 2
+l_prime: 256
 
 sample_rate: None
 clip_duration: None
@@ -35,7 +35,7 @@ model:
     ct_dim:  # Leave blank if None
     ctf_dim: # Leave blank if None
     cx_dim:  # Leave blank if None
-    cavg_dim: 120
+    cavg_dim: 512
 
     in_channels: 1
     patch_size: [4, 4]
@@ -55,6 +55,6 @@ train:
     test_every_n_steps: 2000
     save_every_n_steps: 20000
     training_steps: 500000
-    resume_ckpt_path: #checkpoints/train/pointscloud2rir/step=100000_ema.pth
+    resume_ckpt_path: checkpoints/train/pointscloud2rir copy/step=340000_ema.pth
 
 valid_audios: # Leave blank
