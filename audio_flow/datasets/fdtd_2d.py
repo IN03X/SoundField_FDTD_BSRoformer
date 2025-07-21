@@ -120,8 +120,13 @@ class FDTD2D_at_xy:
         t = data["t"][0 :: self.skip]  # (t,)
         u0 = u[0]
 
-        i = random.randint(0, u.shape[1] - 1)
-        j = random.randint(0, u.shape[2] - 1)
+        bnd_pointscloud = np.argwhere(bnd == 1)  # (L_bnd, 2)
+        bnd_set = set(map(tuple, bnd_pointscloud))  
+        while True:
+            i = random.randint(0, u.shape[1] - 1)  # i ∈ [0, height - 1]
+            j = random.randint(0, u.shape[2] - 1)  # j ∈ [0, width - 1]
+            if (i, j) not in bnd_set:
+                break
 
         # x = self.dx * i
         # y = self.dy * j
@@ -172,13 +177,19 @@ class FDTD2D_at_xy_pointscloud:
         t = data["t"][0 :: self.skip]  # (t,)
         u0 = u[0]
 
-        i = random.randint(0, u.shape[1] - 1)
-        j = random.randint(0, u.shape[2] - 1)
-
+        bnd_pointscloud = np.argwhere(bnd == 1)  # (L_bnd, 2)
+        bnd_set = set(map(tuple, bnd_pointscloud))  
+        while True:
+            i = random.randint(0, u.shape[1] - 1)  # i ∈ [0, height - 1]
+            j = random.randint(0, u.shape[2] - 1)  # j ∈ [0, width - 1]
+            if (i, j) not in bnd_set:
+                break
+            
         # x = self.dx * i
         # y = self.dy * j
         x = np.array(i).astype(np.float32) #()
         y = np.array(j).astype(np.float32)
+
         uxy = u[:,i,j] #(l,)
 
         data = {
