@@ -12,6 +12,7 @@ class PointsCloud2RIR(nn.Module):
         super().__init__()
         
         self.vocoder = Mel_BigVGAN_44kHz()
+        self.vocoder_name = None
 
     def __call__(self, data: dict) -> tuple[Tensor, dict, dict]:
         r"""Transform data into latent representations and conditions.
@@ -32,18 +33,26 @@ class PointsCloud2RIR(nn.Module):
                 # "x": x[None, ...], # (1, 1)
                 # "y": y[None, ...], # (1, 1)
                 # "uxy": uxy[None, ...], # (1, l, 1, 1)
+
+            d0 = data["d0"][0].item()
+            l_prime = data["l_prime"][0].item()
+            vocoder_name = str(data["vocoder"][0])
+            self.vocoder_name = vocoder_name
         
             u0 = data["u0"].to(device) # (b, 1, t, f)
             bnd = data["bnd"].to(device) # (b, l'd0)
             x = data["x"].to(device) # (b, 1,)
             y = data["y"].to(device) # (b, 1,)
-            uxy = data["uxy"].to(device)  # (b, l, 1, 1)
-            d0 = data["d0"][0].item()
-            l_prime = data["l_prime"][0].item()
 
-            target = rearrange(uxy, 'b l t f -> b t l f')  # (b, 1, l, 1)
-            l1 = 240
-            target = rearrange(target, 'b c (l1 l2) f -> b c l1 (l2 f)', l1=l1)  # (b, 1, 240, l2)
+            uxy = data["uxy"].to(device)  # (b, l, 1, 1)
+            uxy = rearrange(uxy, 'b l t f -> b t l f')  # (b, 1, l, 1)
+
+            if vocoder_name == "bigvgan":
+                target = rearrange(uxy, 'b t l f -> b t (l f)')  # (b, 1, l)
+                target  = self.vocoder.encode(target)  # (b, 1, t, f)
+            else:
+                l1 = 240
+                target = rearrange(uxy, 'b c (l1 l2) f -> b c l1 (l2 f)', l1=l1)  # (b, 1, 240, l2)
 
             avg_embedder = AVGEmbedder(d0=d0,l_prime=l_prime)
             bnd_pointscloud = []
@@ -92,7 +101,15 @@ class PointsCloud2RIR(nn.Module):
         Outputs:
             y: (b, l)
         """
-        l1 = 240
-        x = rearrange(x, 'b c l1 l2 -> b (c l1 l2)', l1=l1)  
+
+        if self.vocoder_name == "bigvgan":
+            x = self.vocoder.decode(x)
+            return x.squeeze(dim=0)
         
-        return x
+        else:
+            l1 = 240
+            x = rearrange(x, 'b c l1 l2 -> b (c l1 l2)', l1=l1)  
+            
+            return x
+
+        

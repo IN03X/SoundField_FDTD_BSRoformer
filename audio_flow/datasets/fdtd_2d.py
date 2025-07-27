@@ -149,7 +149,7 @@ class FDTD2D_at_xy:
         return 100 # Number of steps in an epoch, 1getitem = 1len
     
 class FDTD2D_at_xy_pointscloud:
-    def __init__(self, skip: int, duration:float, dx:float=0.1, dy:float=0.1, sampling_frequency:float=48000, d0:int=6, l_prime:int=20 ) -> None:
+    def __init__(self, skip: int, duration:float, dx:float=0.1, dy:float=0.1, sampling_frequency:float=48000, d0:int=6, l_prime:int=20 , vocoder:str=None) -> None:
         self.skip = skip
         self.simulator = FDTD2D(duration=duration,dx=dx,dy=dy,sampling_frequency=sampling_frequency)
         self.i = 0
@@ -157,6 +157,7 @@ class FDTD2D_at_xy_pointscloud:
         self.dy = dy
         self.d0 = d0
         self.l_prime = l_prime
+        self.vocoder = vocoder
 
 
     def __getitem__(self, index: int) -> dict:
@@ -200,7 +201,8 @@ class FDTD2D_at_xy_pointscloud:
                 "y": y[None, ...], # (1,)
                 "uxy": uxy[..., None, None], # (l, 1, 1)
                 "d0": self.d0,
-                "l_prime": self.l_prime
+                "l_prime": self.l_prime,
+                "vocoder": self.vocoder,
         }
 
         return data

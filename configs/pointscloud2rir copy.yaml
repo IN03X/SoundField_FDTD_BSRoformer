@@ -4,6 +4,9 @@ dx: 0.1
 dy: 0.1
 sampling_frequency: 12000
 
+vocoder: # Leave blank if Origin Audio
+# vocoder: "bigvgan"
+
 d0: 2
 l_prime: 256
 
@@ -55,6 +58,6 @@ train:
     test_every_n_steps: 2000
     save_every_n_steps: 20000
     training_steps: 500000
-    resume_ckpt_path: checkpoints/train/pointscloud2rir copy/step=340000_ema.pth
+    resume_ckpt_path: #checkpoints/train/pointscloud2rir copy/step=60000_ema.pth
 
 valid_audios: # Leave blank

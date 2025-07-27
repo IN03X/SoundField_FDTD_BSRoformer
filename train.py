@@ -348,6 +348,7 @@ def get_dataset(
                 sampling_frequency=configs["sampling_frequency"],
                 d0=configs["d0"],
                 l_prime=configs["l_prime"],
+                vocoder=configs["vocoder"],
             )
             return dataset
 
@@ -562,12 +563,13 @@ def validate(
                     method="dopri5",
                 )
             est_target = traj[-1]  
-            est_audio = data_transform.latent_to_audio(est_target).data.cpu().numpy()[0]  # (1,l)
-            gt_audio = data_transform.latent_to_audio(target).data.cpu().numpy()[0]  # (1,l)
+            est_audio = data_transform.latent_to_audio(est_target).data.cpu().numpy()[0]  # (l,)
+            gt_audio = data_transform.latent_to_audio(target).data.cpu().numpy()[0]  # (l,)
             x = data["x"].cpu().numpy().item()
             y = data["y"].cpu().numpy().item()
 
             time_axis = np.arange(len(gt_audio)) / configs["sampling_frequency"]  
+            # pdb.set_trace()
             ax.plot(time_axis, gt_audio, 
                     color='royalblue', alpha=0.8, linewidth=0.8, label='Ground Truth')
             ax.plot(time_axis, est_audio, 
