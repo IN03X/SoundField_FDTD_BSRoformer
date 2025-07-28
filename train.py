@@ -333,7 +333,8 @@ def get_dataset(
                 duration=configs["duration"],
                 dx=configs["dx"],
                 dy=configs["dy"],
-                sampling_frequency=configs["sampling_frequency"]
+                sampling_frequency=configs["sampling_frequency"],
+                vocoder=configs["vocoder"],
             )
             return dataset
         

@@ -11,8 +11,9 @@ from audio_flow.utils import suppress_print
 class Mel_BigVGAN_44kHz(nn.Module):
     def __init__(self):
         super().__init__()
-
-        self.model = bigvgan.BigVGAN.from_pretrained('nvidia/bigvgan_v2_44khz_128band_512x', use_cuda_kernel=False)
+        
+        self.model = bigvgan.BigVGAN.from_pretrained('nvidia/bigvgan_v2_24khz_100band_256x', use_cuda_kernel=False)
+        # self.model = bigvgan.BigVGAN.from_pretrained('nvidia/bigvgan_v2_44khz_128band_512x', use_cuda_kernel=False)
         self.model.remove_weight_norm()
 
     def encode(self, audio: Tensor) -> Tensor:

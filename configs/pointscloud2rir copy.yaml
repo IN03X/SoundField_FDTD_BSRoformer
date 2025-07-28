@@ -4,7 +4,7 @@ dx: 0.1
 dy: 0.1
 sampling_frequency: 12000
 
-vocoder: # Leave blank if Origin Audio
+vocoder: "" # Leave blank if Origin Audio
 # vocoder: "bigvgan"
 
 d0: 2

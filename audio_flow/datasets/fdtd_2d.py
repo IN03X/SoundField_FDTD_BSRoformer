@@ -94,12 +94,13 @@ class FDTD2D_at_T:
             return self.select_num
         
 class FDTD2D_at_xy:
-    def __init__(self, skip: int, duration:float, dx:float=0.1, dy:float=0.1, sampling_frequency:float=48000) -> None:
+    def __init__(self, skip: int, duration:float, dx:float=0.1, dy:float=0.1, sampling_frequency:float=48000, vocoder:str=None) -> None:
         self.skip = skip
         self.simulator = FDTD2D(duration=duration,dx=dx,dy=dy,sampling_frequency=sampling_frequency)
         self.i = 0
         self.dx = dx
         self.dy = dy
+        self.vocoder = vocoder
 
 
     def __getitem__(self, index: int) -> dict:
@@ -141,6 +142,7 @@ class FDTD2D_at_xy:
                 "x": x[None, ...], # (1,)
                 "y": y[None, ...], # (1,)
                 "uxy": uxy[..., None, None], # (l, 1, 1)
+                "vocoder": self.vocoder,
         }
 
         return data
